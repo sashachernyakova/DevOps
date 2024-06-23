@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  backend:
+    image: spring-backend:tag
+    build: 
+      context: .
+      dockerfile: backend.Dockerfile
+    env_file:
+      - .env
+    networks:
+      - ps
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: react-frontend:tag
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    volumes:
+      - type: bind
+        source: ./nginx-config/nginx-frontend.conf
+        target: /etc/nginx/nginx.conf
+    env_file:
+      - ./react-frontend/.env
+    networks:
+      - ps
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx_proxy:
+    image: nginx-proxy:tag
+    build:
+      context: .
+      dockerfile: nginx-proxy.Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./nginx-config/nginx.conf
+        target: /etc/nginx/nginx.conf
+    networks:
+      - ps
+    depends_on:
+      - backend
+      - frontend
+
+  db:
+    image: mysql:8.4
+    volumes:
+      - data:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - ps
+    healthcheck:
+      test: mysql -u $MYSQL_USER --password=$MYSQL_PASSWORD -e "SHOW DATABASES LIKE 'hobbie_db';"
+      start_period: 240s
+      timeout: 20s
+      retries: 10
+
+networks:
+  ps:
+
+volumes:
+  data:

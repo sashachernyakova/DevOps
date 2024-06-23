@@ -1,0 +1,5 @@
+FROM alpine:3.19.1 as system
+
+RUN apk update && \
+    apk add openjdk17 maven && \
+    rm -rf /var/cache/apk/*

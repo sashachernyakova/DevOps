@@ -1,0 +1,11 @@
+FROM system as run
+
+WORKDIR /home
+
+COPY --from=build /build/target/spring-petclinic-*.jar app.jar
+
+RUN chown -R 1000:1000 /home  
+ 
+USER 1000:1000
+
+CMD ["java", "-jar", "app.jar"]

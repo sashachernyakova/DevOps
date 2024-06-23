@@ -1,0 +1,73 @@
+include:
+  - local: '.gitlab-ci/build.yml'
+  - local: '.gitlab-ci/deploy.yml'
+
+image: docker:latest
+
+services:
+  - docker:dind
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - build & push
+  - deploy
+
+build and push mysql:
+  stage: build & push
+  extends: .build_mysql
+  tags:
+    - docker_runner
+
+build and push spring-backend:
+  stage: build & push
+  extends: .build_spring-backend
+  tags:
+    - docker_runner
+
+build and push react-frontend:
+  stage: build & push
+  extends: .build_react-frontend
+  tags:
+    - docker_runner
+
+build and push nginx-proxy:
+  stage: build & push
+  extends: .build_nginx-proxy
+  tags:
+    - docker_runner
+
+deploy mysql:
+  stage: deploy
+  extends: .deploy_mysql
+  tags:
+    - docker_runner
+
+deploy backend:
+  stage: deploy
+  extends: .deploy_spring-backend
+  tags:
+    - docker_runner
+  needs: 
+    - deploy mysql
+
+deploy frontend:
+  stage: deploy
+  extends: .deploy_react-frontend
+  tags:
+    - docker_runner
+  needs: 
+    - deploy mysql
+
+deploy nginx:
+  stage: deploy
+  extends: .deploy_nginx-proxy
+  tags:
+    - docker_runner
+  needs: 
+    - deploy mysql

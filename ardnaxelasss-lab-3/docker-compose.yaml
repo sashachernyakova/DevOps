@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  mysql:
+    image: mysql:8.2    
+    networks:
+      - backend
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - "./conf.d:/etc/mysql/conf.d:ro"
+      - mysql:/var/lib/mysql
+      
+  flyway:
+    image: boxfuse/flyway
+    networks:
+      - backend
+    environment:
+      - FLYWAY_URL=${FLYWAY_URL}
+      - FLYWAY_USER=${FLYWAY_USER}
+      - FLYWAY_PASSWORD=${FLYWAY_PASSWORD}
+    volumes:
+      - migration:/flyway/sql
+      
+  app:
+    image: lab3_image
+    container_name: lab3_container
+    build: .
+    networks:
+      - backend
+    ports:
+      - "8080:8080"
+networks:
+  backend:
+    driver: bridge
+    
+volumes:
+  migration:
+  mysql:
+  

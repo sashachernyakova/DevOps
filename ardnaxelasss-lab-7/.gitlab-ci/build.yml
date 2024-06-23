@@ -1,0 +1,59 @@
+include:
+  - project: 'sasha7340122/ci2'
+    ref: main
+    file: 'ci_docker.yml'
+
+.build_spring-backend:
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "backend.Dockerfile"
+    IMAGE_NAME: "spring-backend"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - backend.Dockerfile
+        - spring-backend/*
+        - .gitlab-ci.yml
+        - .gitlab-ci/build.yml
+
+.build_react-frontend:
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "frontend.Dockerfile"
+    IMAGE_NAME: "react-frontend"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - frontend.Dockerfile
+        - react-frontend/*
+        - .gitlab-ci.yml
+        - .gitlab-ci/build.yml
+
+.build_nginx-proxy:
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "nginx-proxy.Dockerfile"
+    IMAGE_NAME: "nginx-proxy"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - nginx-proxy.Dockerfile
+        - nginx-config/*
+        - .gitlab-ci.yml
+        - .gitlab-ci/build.yml
+
+.build_mysql:
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "mysql.Dockerfile"
+    IMAGE_NAME: "mysql"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - mysql.Dockerfile
+        - .gitlab-ci.yml
+        - .gitlab-ci/build.yml

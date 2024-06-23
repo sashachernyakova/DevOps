@@ -1,0 +1,12 @@
+FROM system as build
+
+WORKDIR /build
+
+COPY spring-petclinic/pom.xml .
+
+RUN  mvn dependency:resolve
+
+COPY spring-petclinic/src ./src
+
+RUN mvn package &&\
+    rm -rf /var/cache/apk/*

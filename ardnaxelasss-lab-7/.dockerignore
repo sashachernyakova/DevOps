@@ -1,0 +1,8 @@
+target/
+build/
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.jar
+*node_modules

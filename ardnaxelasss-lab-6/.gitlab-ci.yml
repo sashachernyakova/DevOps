@@ -1,0 +1,60 @@
+include:  
+  - project: 'sasha7340122/ci'
+    ref: main
+    file: 'ci_docker.yml'
+
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - build
+
+build_backend:
+  stage: build
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "Dockerfile"
+    IMAGE_NAME: "spring-backend"
+    BUILD_CONTEXT: "spring-backend"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - spring-backend/*
+        - Dockerfile
+        - .gitlab-ci.yml
+
+build_frontend:
+  stage: build
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "Dockerfile"
+    IMAGE_NAME: "react-frontend"
+    BUILD_CONTEXT: "react-frontend"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - react-frontend/*
+        - Dockerfile
+        - .gitlab-ci.yml
+
+build_nginx:
+  stage: build
+  extends: .docker_build
+  variables:
+    DOCKERFILE_PATH: "Dockerfile"
+    IMAGE_NAME: "nginx-proxy"
+    BUILD_CONTEXT: "nginx"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker-compose.yml
+        - nginx/*
+        - .gitlab-ci.yml
+

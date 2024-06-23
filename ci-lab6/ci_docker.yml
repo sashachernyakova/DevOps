@@ -1,0 +1,32 @@
+.docker_login: &docker_login
+  - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+
+.docker_build:
+  variables:
+    DOCKERFILE_PATH: ""
+    IMAGE_NAME: ""
+    BUILD_CONTEXT: ""
+  script:
+    - *docker_login
+    - docker build -f ${BUILD_CONTEXT}/${DOCKERFILE_PATH} -t ${CI_REGISTRY_IMAGE}/${IMAGE_NAME} ${BUILD_CONTEXT}
+    - docker push ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}
+
+.docker_run:
+  variables:
+    NETWORK_NAME: "lab6"
+  script:
+    - if [ "$(docker ps -q -a -f name=${CONTAINER_NAME})" ]; then
+    -   docker rm ${CONTAINER_NAME} -f
+    - fi
+    - *docker_login
+    - if [ ! "$(docker network ls -q -f name=${NETWORK_NAME})" ]; then
+    -   docker network create ${NETWORK_NAME}
+    - fi
+    - |
+      docker run -d \
+        ${ENV_FILE:+--env-file ${ENV_FILE}} \
+        ${CONTAINER_NAME:+--name ${CONTAINER_NAME}} \
+        ${PORT_NUMS:+-p ${PORT_NUMS}} \
+        ${VOLUME:+-v ${VOLUME}} \
+        --network ${NETWORK_NAME} \
+        ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}
